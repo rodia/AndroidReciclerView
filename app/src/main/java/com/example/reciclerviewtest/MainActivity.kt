@@ -2,14 +2,20 @@ package com.example.reciclerviewtest
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
+import android.view.MenuItem
 
 class MainActivity : AppCompatActivity() {
+    private val LOG_TAG: String? = "Theme"
+    private var mySwipeRefreshLayout: SwipeRefreshLayout? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
-    val musics: ArrayList<Music> = ArrayList()
+    private val musics: ArrayList<Music> = ArrayList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -23,9 +29,51 @@ class MainActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+
+        mySwipeRefreshLayout = findViewById(R.id.swiperefresh)
+        /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        mySwipeRefreshLayout!!.setOnRefreshListener {
+            Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout")
+
+            // This method performs the actual data-refresh operation.
+            // The method calls setRefreshing(false) when it's finished.
+            //myUpdateOperation()
+            Thread.sleep(1_000)
+
+            mySwipeRefreshLayout!!.isRefreshing = false
+        }
     }
 
-    fun addMusics() {
+    /*
+     * Listen for option item selections so that we receive a notification
+     * when the user requests a refresh by selecting the refresh action bar item.
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+
+            // Check if user triggered a refresh:
+            R.id.menu_refresh -> {
+                Log.i(LOG_TAG, "Refresh menu item selected")
+
+                // Signal SwipeRefreshLayout to start the progress indicator
+                mySwipeRefreshLayout!!.isRefreshing = true
+
+                // Start the refresh background task.
+                // This method calls setRefreshing(false) when it's finished.
+                //myUpdateOperation()
+
+                return true
+            }
+        }
+
+        // User didn't trigger a refresh, let the superclass handle this action
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun addMusics() {
         musics.add(Music("Imagine", "John Lennon", "1971"))
         musics.add(Music("Stairway To Heaven", "Led Zeppelin", "1971"))
         musics.add(Music("Let It Be (cancion)", "The Beatles", "1970"))
